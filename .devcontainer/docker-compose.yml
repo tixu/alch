@@ -1,0 +1,72 @@
+services:
+  app:
+    build:
+        context: .
+        dockerfile: ./Dockerfile
+    environment:
+        PORT: 3000
+    ports:
+        - 3000:3000
+    volumes:
+        - ..:/workspace
+    user: vscode
+    command: sleep infinity
+
+  postgres:
+      image: postgres:12-alpine
+      volumes:
+        - /var/lib/postgresql/data
+      environment:
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=postgres
+      restart: always
+  cachet:
+      image: cachethq/docker
+      ports:
+        - 80:8000
+      links:
+        - postgres:postgres
+      environment:
+        - DB_DRIVER=pgsql
+        - DB_HOST=postgres
+        - DB_PORT=5432
+        - DB_DATABASE=postgres
+        - DB_USERNAME=postgres
+        - DB_PASSWORD=postgres
+        - DB_PREFIX=chq_
+        - APP_KEY=base64:i0zaVT2X51rvAz+MujApm2QrX2QllI6jZDL2699dJyw=
+        - APP_LOG=errorlog
+        - APP_ENV=${APP_ENV:-production}
+        - APP_DEBUG=false
+        - DEBUG=false
+        - MAIL_DRIVER=smtp
+        - MAIL_HOST=mailhog
+        - MAIL_PORT=1025
+        - MAIL_USERNAME=null
+        - MAIL_PASSWORD=null
+        - MAIL_ADDRESS=francois.vassart@smals.be
+        - MAIL_NAME=null
+        
+      depends_on:
+        - postgres
+      restart: on-failure
+  mailhog:
+      image:  mailhog/mailhog:v1.0.1
+      logging:
+        driver: 'none'  # disable saving logs
+      ports:
+        - 1025:1025 # smtp server
+        - 8025:8025 # web ui
+
+  adminer:
+    image: adminer:latest
+    depends_on:
+      - postgres
+    environment:
+      ADMINER_DEFAULT_DB_DRIVER: pgsql
+      ADMINER_DEFAULT_DB_HOST: postgres
+      ADMINER_DEFAULT_DB_NAME: adminer
+    ports:
+      - 7080:8080
+
+    
