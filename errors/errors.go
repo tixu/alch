@@ -9,6 +9,11 @@ const InternalServerErrorType = "INTERNAL_SERVER_ERROR_TYPE"
 // NotFoundErrorType Not found error type
 const NotFoundErrorType = "NOT_FOUND_ERROR_TYPE"
 
+
+// Empty body error
+
+const EMPTY_BODY_ERROR_TYPE = "EMPTY_BODY_ERROR_TYPE"
+
 // GeneralError General error
 type GeneralError struct {
 	ErrorType string
@@ -33,4 +38,9 @@ func NewInternalServerError(err error) *GeneralError {
 // NewNotFoundError New not found error
 func NewNotFoundError(err error) *GeneralError {
 	return &GeneralError{ErrorType: NotFoundErrorType, Err: err}
+}
+
+// NewNotFoundError New not found error
+func NewEmptyBodyError(err error) *GeneralError {
+	return &GeneralError{ErrorType:EMPTY_BODY_ERROR_TYPE  , Err: err}
 }

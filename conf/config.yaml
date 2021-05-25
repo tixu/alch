@@ -1,0 +1,13 @@
+# Log configuration
+log:
+  # Log level
+  level: info
+  # Log format
+  format: text
+# Cachet configuration
+cachet:
+  url: http://cachet:8000
+  apiKey: 7ABqTvQVOwOySelPvY91
+server:
+  address: http://localhost
+  port: 7001
