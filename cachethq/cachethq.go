@@ -19,6 +19,7 @@ type instance struct {
 
 // ChangeComponentStatus Change component status
 func (ctx *instance) ChangeComponentStatus(name string, groupName string, status int) error {
+
 	ctx.logger.Infof("looking for component %s in group %s", name, groupName)
 	// Find component
 	compo, err := ctx.findComponent(name, groupName)
