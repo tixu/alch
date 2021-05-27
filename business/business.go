@@ -12,22 +12,28 @@ import (
 func (ctx *business) HandleNotification(msg alerts.Notification) error {
 	for i, alert := range msg.Alerts {
 		ctx.logger.Infof("alert: %d", i)
-		group := alert.Labels["tenant"]
-		service := alert.Labels["service"]
-		status := alert.Status
-		ctx.logger.Infof("modififying component %s in group %s", service, group)
-		hqstatus := cachet.ComponentStatusOperational
-		if status == "firing" {
-			hqstatus = cachet.ComponentStatusPartialOutage
+		group, service, status, err := extractInfo(alert)
+		if err != nil {
+			continue
 		}
-		ctx.logger.Infof("modififying component %s in group %s", service, group, hqstatus)
+		ctx.logger.Infof("modififying component %s in group %s", service, group)
 		ctx.metrics.IncreaseComponentCount()
-		error := ctx.client.ChangeComponentStatus(service, group, hqstatus)
+		error := ctx.client.ChangeComponentStatus(service, group, status)
 		if error != nil {
 			ctx.metrics.IncreaseFailedComponentCount()
 		}
 	}
 	return nil
+}
+
+func extractInfo(alert alerts.Alert) (group string, service string, status int, err error) {
+	group = alert.Labels["tenant"]
+	service = alert.Labels["service"]
+	status = cachet.ComponentStatusOperational
+	if alert.Status == "firing" {
+		status = cachet.ComponentStatusPartialOutage
+	}
+	return group, service, status, nil
 }
 
 type Business interface {

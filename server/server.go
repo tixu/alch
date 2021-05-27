@@ -18,6 +18,9 @@ import (
 	"github.com/tixu/alch/config"
 	"github.com/tixu/alch/errors"
 	"github.com/tixu/alch/metrics"
+
+	health "github.com/hellofresh/health-go/v4"
+	healthHttp "github.com/hellofresh/health-go/v4/checks/http"
 )
 
 func (ctx *server) prom(w http.ResponseWriter, r *http.Request) {
@@ -61,12 +64,24 @@ func (ctx *server) prom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx.logger.Infof(msg.Status)
 	worker, _ := business.NewInstanceConf(ctx.conf, ctx.metrics, ctx.logger)
 	worker.HandleNotification(msg)
 }
 
 func NewServer(cfg *config.Config, logger *logrus.Logger) *server {
+	h, err := health.New()
+	if err != nil {
+		logger.Fatal("health error")
+	}
+	h.Register(health.Config{
+		Name:      "cachethq check",
+		Timeout:   time.Second * 5,
+		SkipOnErr: true,
+		Check: healthHttp.New(healthHttp.Config{
+			URL: cfg.Cachet.URL,
+		}),
+	})
+
 	router := mux.NewRouter()
 	addr := fmt.Sprintf("%s:%d", cfg.Server.ListenAddr, cfg.Server.Port)
 	httpserver := &http.Server{
@@ -80,6 +95,7 @@ func NewServer(cfg *config.Config, logger *logrus.Logger) *server {
 	s := &server{server: httpserver, logger: logger, conf: cfg, metrics: m}
 	router.HandleFunc("/webhook/prometheus", s.prom)
 	router.Handle("/metrics", promhttp.Handler())
+	router.Handle("/status", h.Handler())
 	return s
 }
 
