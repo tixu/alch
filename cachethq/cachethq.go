@@ -106,7 +106,7 @@ func (ctx *instance) findComponentGroup(name string) (*cachet.ComponentGroup, er
 
 	// Get component group
 	grp := c.ComponentGroups[0]
-	ctx.logger.Infof("group found %v\n")
+	ctx.logger.Infof("group found \n")
 	return &grp, nil
 }
 func NewInstance(url string, key string, logger *logrus.Logger) (Instance, error) {
