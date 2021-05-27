@@ -1,4 +1,4 @@
-all: bin/example
+all: bin/alch
 test: lint unit-test
 
 PLATFORM=local
